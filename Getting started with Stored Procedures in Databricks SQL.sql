@@ -42,10 +42,14 @@ grant execute on procedure rectangle_area to `demo_analysts`;
 
 
 - Call it // declare a variable to receive the OUT value, then CALL.
+- Run the declare/call/result together as one script (a notebook or SQL-editor
+- cell, or the BEGIN ... END block below) so the variable stays in scope.
 
-declare result double;
-call rectangle_area(4, 5, result);
-select result;   -- 20.0
+begin
+  declare result double;
+  call rectangle_area(4, 5, result);
+  values (result);   -- 20.0
+end;
 
 
 - Example 2 // A procedure that calls a function
@@ -68,9 +72,11 @@ as begin
   set area = rectangle_area_fn(length, width);
 end;
 
-declare result2 double;
-call rectangle_area_v2(6, 7, result2);
-select result2;   -- 42.0
+begin
+  declare result2 double;
+  call rectangle_area_v2(6, 7, result2);
+  values (result2);   -- 42.0
+end;
 
 
 - Example 3 // INOUT carries state between calls (classic data-warehousing pattern)
@@ -87,14 +93,13 @@ as begin
   set total = total + x;
 end;
 
-declare added int;
-declare running int default 0;
-
-call add_amount(10, added, running);
-select added, running;   -- 10, 10
-
-call add_amount(25, added, running);
-select added, running;   -- 25, 35
+begin
+  declare added int;
+  declare running int default 0;
+  call add_amount(10, added, running);   -- running -> 10
+  call add_amount(25, added, running);   -- running -> 35
+  values (added, running);               -- 25, 35
+end;
 
 
 - Clean up (optional)
